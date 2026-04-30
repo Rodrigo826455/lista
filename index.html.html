@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Tarefas Editável</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #333;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+        .date-container {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .editable-field {
+            border: none;
+            border-bottom: 1px solid #ccc;
+            outline: none;
+            background: transparent;
+            padding: 2px;
+        }
+        h1 {
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 400;
+            margin-bottom: 40px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 40px;
+        }
+        .task-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .task-input {
+            flex-grow: 1;
+            border: none;
+            border-bottom: 1px solid #d0d0d0;
+            font-size: 11pt;
+            outline: none;
+        }
+        .notes {
+            margin-top: 50px;
+            background-color: #f2f2f2;
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+        }
+        .notes-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 11pt;
+            line-height: 25px;
+            resize: none;
+            outline: none;
+            background-image: linear-gradient(#c0c0c0 1px, transparent 1px);
+            background-size: 100% 25px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="date-container">
+        DATA: <input type="text" id="data-field" class="editable-field" placeholder="___/___/___">
+    </div>
+    
+    <h1>LISTA DE TAREFAS</h1>
+
+    <div class="container" id="tasks-grid">
+        <!-- As tarefas serão geradas pelo JavaScript -->
+    </div>
+
+    <div class="notes">
+        <span class="notes-title">ANOTAÇÕES</span>
+        <textarea id="notes-field" placeholder="Escreva aqui..."></textarea>
+    </div>
+
+    <script>
+        const totalTasks = 30; // 15 por coluna
+        const grid = document.getElementById('tasks-grid');
+
+        // 1. Criar a estrutura das tarefas
+        for (let i = 0; i < totalTasks; i++) {
+            const item = document.createElement('div');
+            item.className = 'task-item';
+            item.innerHTML = `
+                <input type="checkbox" class="checkbox" id="check-${i}">
+                <input type="text" class="task-input" id="task-${i}" placeholder="...">
+            `;
+            grid.appendChild(item);
+        }
+
+        // 2. Função para salvar no LocalStorage
+        function saveData() {
+            const data = {
+                date: document.getElementById('data-field').value,
+                notes: document.getElementById('notes-field').value,
+                tasks: []
+            };
+
+            for (let i = 0; i < totalTasks; i++) {
+                data.tasks.push({
+                    text: document.getElementById(`task-${i}`).value,
+                    checked: document.getElementById(`check-${i}`).checked
+                });
+            }
+            localStorage.setItem('minhaListaTarefas', JSON.stringify(data));
+        }
+
+        // 3. Função para carregar os dados
+        function loadData() {
+            const saved = localStorage.getItem('minhaListaTarefas');
+            if (!saved) return;
+
+            const data = JSON.parse(saved);
+            document.getElementById('data-field').value = data.date || '';
+            document.getElementById('notes-field').value = data.notes || '';
+
+            data.tasks.forEach((task, i) => {
+                const textInput = document.getElementById(`task-${i}`);
+                const checkInput = document.getElementById(`check-${i}`);
+                if (textInput) textInput.value = task.text;
+                if (checkInput) checkInput.checked = task.checked;
+            });
+        }
+
+        // 4. Escutar mudanças em qualquer campo
+        document.addEventListener('input', saveData);
+        document.addEventListener('change', saveData);
+
+        // Iniciar
+        window.onload = loadData;
+    </script>
+</body>
+</html>
